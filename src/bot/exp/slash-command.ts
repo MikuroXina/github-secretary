@@ -4,6 +4,11 @@ export interface ApplicationCommand {
   options: ApplicationCommandOption[];
 }
 
+export const commandIntoBody = (command: ApplicationCommand): unknown => ({
+  ...command,
+  options: command.options.map(optionIntoRawValue),
+});
+
 export interface ApplicationCommandOption {
   type: ApplicationCommandOptionType;
   name: string;
@@ -12,6 +17,12 @@ export interface ApplicationCommandOption {
   choices?: ApplicationCommandOptionChoice[];
   options?: ApplicationCommandOption[];
 }
+
+const optionIntoRawValue = (self: ApplicationCommandOption): unknown => ({
+  ...self,
+  type: typeIntoRawValue(self.type),
+  options: self.options?.map(optionIntoRawValue),
+});
 
 export type ApplicationCommandOptionType =
   | "SUB_COMMAND"
@@ -23,9 +34,7 @@ export type ApplicationCommandOptionType =
   | "CHANNEL"
   | "ROLE";
 
-export const typeIntoRawValue = (
-  self: ApplicationCommandOptionType,
-): number => {
+const typeIntoRawValue = (self: ApplicationCommandOptionType): number => {
   switch (self) {
     case "SUB_COMMAND":
       // eslint-disable-next-line no-magic-numbers
