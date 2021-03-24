@@ -1,4 +1,4 @@
-import { Database, notify } from "./notify";
+import { Database, Query, notify } from "./notify";
 import {
   GitHubNotifications,
   NotificationId,
@@ -20,7 +20,7 @@ const db: Database = {
   },
 };
 
-const query = {
+const query: Query = {
   fetchNotification: () =>
     Promise.resolve([
       {

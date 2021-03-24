@@ -33,4 +33,15 @@ export class DiscordMessage implements Message {
   async sendEmbed(embed: MessageEmbed): Promise<void> {
     await this.raw.channel.send(embed);
   }
+
+  panic(reason: unknown): never {
+    const yellow = 0xffc208;
+    this.sendEmbed(
+      new MessageEmbed()
+        .setColor(yellow)
+        .setTitle("エラー発生, リトライはされません")
+        .setDescription(reason),
+    );
+    throw reason;
+  }
 }

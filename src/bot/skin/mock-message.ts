@@ -36,4 +36,9 @@ export class MockMessage implements Message {
     this.emitter.emit("sendEmbed", embed);
     return Promise.resolve();
   }
+
+  panic(reason: unknown): never {
+    console.error(reason);
+    throw reason;
+  }
 }

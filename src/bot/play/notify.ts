@@ -5,38 +5,45 @@ import type {
 import type { Analecta } from "../exp/analecta";
 import type { GitHubUser } from "../exp/github-user";
 import { MessageEmbed } from "discord.js";
-import { fetchErrorHandler } from "../skin/fetch-error-handler";
 
-export type Database = {
+export interface Database {
   getUser(): Promise<GitHubUser>;
   update(ids: NotificationId[]): Promise<void>;
-};
+}
 
-export type Query = {
+export interface Query {
   fetchNotification(user: GitHubUser): Promise<GitHubNotifications>;
+}
+
+const fetchErrorHandler = (send: (message: MessageEmbed) => Promise<void>) => (
+  reason: unknown,
+) => {
+  const yellow = 0xffc208;
+  send(
+    new MessageEmbed()
+      .setColor(yellow)
+      .setTitle("通知データ取得のエラー発生")
+      .setDescription(reason),
+  );
+  return null;
 };
 
-export const notify = (db: Database, query: Query) => async (
-  analecta: Analecta,
-  send: (message: MessageEmbed) => Promise<void>,
-): Promise<void> => {
-  const user = await db.getUser();
-  const { currentNotificationIds } = user;
-
-  const res = await query
-    .fetchNotification(user)
-    .catch(fetchErrorHandler((message) => send(message)));
-  const newIds = res.map(({ id }) => id);
-  const newIdSet = new Set([...newIds]);
-  for (const oldE of currentNotificationIds) {
+const hasIdsUpdated = (
+  older: readonly NotificationId[],
+  newer: readonly NotificationId[],
+): boolean => {
+  const newIdSet = new Set([...newer]);
+  for (const oldE of older) {
     newIdSet.delete(oldE);
   }
-  await db.update(newIds);
+  return newIdSet.size !== 0;
+};
 
-  if (newIdSet.size === 0) {
-    return;
-  }
-
+const sendSubjects = async (
+  res: GitHubNotifications,
+  send: (message: MessageEmbed) => Promise<void>,
+  analecta: Analecta,
+) => {
   const subjects = res.map(({ id, subject: { title } }) => ({
     name: `#${id}`,
     value: title,
@@ -48,4 +55,25 @@ export const notify = (db: Database, query: Query) => async (
       .setTitle(analecta.BringIssue)
       .setURL("https://github.com/notifications"),
   );
+};
+
+export const notify = (db: Database, query: Query) => async (
+  analecta: Analecta,
+  send: (message: MessageEmbed) => Promise<void>,
+): Promise<void> => {
+  const user = await db.getUser();
+  const { currentNotificationIds } = user;
+
+  const res = await query
+    .fetchNotification(user)
+    .catch(fetchErrorHandler(send));
+  if (res === null) {
+    return;
+  }
+  const newIds = res.map(({ id }) => id);
+  await db.update(newIds);
+
+  if (hasIdsUpdated(currentNotificationIds, newIds)) {
+    await sendSubjects(res, send, analecta);
+  }
 };

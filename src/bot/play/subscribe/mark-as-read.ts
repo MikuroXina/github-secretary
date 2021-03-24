@@ -5,7 +5,6 @@ import type { Message } from "../../abst/message";
 import { MessageEmbed } from "discord.js";
 import type { NotificationApi } from "../../abst/api";
 import type { UserDatabase } from "../../abst/user-database";
-import { fetchErrorHandler } from "../../skin/fetch-error-handler";
 import { replyFailure } from "../../abst/reply-failure";
 
 const markPattern = /^\/ghm (?<notification>[0-9]+)\s*$/u;
@@ -34,7 +33,7 @@ export const markAsRead = (
         query,
       }),
     )
-    .catch(fetchErrorHandler((embed) => msg.sendEmbed(embed)));
+    .catch(msg.panic);
 };
 
 const markNotificationAsRead = ({

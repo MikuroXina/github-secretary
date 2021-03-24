@@ -8,4 +8,5 @@ export interface Message {
   withTyping(callee: () => Promise<boolean>): Promise<boolean>;
   reply(message: string): Promise<void>;
   sendEmbed(embed: MessageEmbed): Promise<void>;
+  panic(reason: unknown): never;
 }

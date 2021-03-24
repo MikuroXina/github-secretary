@@ -1,5 +1,5 @@
 import type { Analecta } from "../exp/analecta";
 
-export type SayingLoader = {
+export interface SayingLoader {
   load(): Promise<Analecta>;
-};
+}

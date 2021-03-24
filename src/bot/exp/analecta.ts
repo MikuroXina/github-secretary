@@ -20,10 +20,10 @@ const AnalectaKeyArray = [
 
 export type AnalectaKey = typeof AnalectaKeyArray[number];
 
-export type Analecta = Record<AnalectaKey, string> & {
+export interface Analecta extends Record<AnalectaKey, string> {
   Failure: string[];
   Flavor: string[];
-};
+}
 
 export const validateAnalecta = (obj: unknown): obj is Analecta => {
   if (typeof obj !== "object" || obj === null) {

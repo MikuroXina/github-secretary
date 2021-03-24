@@ -2,12 +2,12 @@ import type { DiscordId } from "./discord-id";
 import type { NotificationId } from "./github-notification";
 
 declare const nominalGitHubUser: unique symbol;
-export type GitHubUser = {
+export interface GitHubUser {
   userName: string;
   notificationToken: string;
   currentNotificationIds: NotificationId[];
   [nominalGitHubUser]: never;
-};
+}
 
 export type GitHubUsers = Map<DiscordId, GitHubUser>;
 
